@@ -1,6 +1,4 @@
-#include <inttypes.h>
 #include <stdio.h>
-#include <string.h>
 #include "linear_hashing.h"
 
 #define FNV_OFFSET 14695981039346656037ULL
@@ -21,6 +19,9 @@ cmp(const void* key1, const void* key2) {
     return strcmp(key1, key2);
 }
 
+#define BUFFER_SIZE 4096
+#define WORD_SIZE   32
+
 int
 main(int argc, char* argv[]) {
     unsigned int bucket_capacity;
@@ -36,11 +37,32 @@ main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    char word[64];
-    lh_hashtable_t* table = lh_create(sizeof(word), sizeof(size_t), bucket_capacity, hash_fnv1a, cmp);
-    while (fscanf(file, "%s\n", word) == 1) {
+    const char* word;
+    lh_hashtable_t* const table = lh_create(WORD_SIZE, sizeof(size_t), bucket_capacity, hash_fnv1a, cmp);
+    char buffer[BUFFER_SIZE];
+    while (fgets(buffer, BUFFER_SIZE, file) != NULL) {
+        word = strtok(buffer, "\n");
+        // const void* const value = lh_lookup(table, word);
+        // if (value == NULL) {
+        //     lh_insert(table, word, &(size_t){1});
+        // } else {
+        //     ++*(size_t*)value;
+        // }
         printf("%s\n", word);
+
+        while (word != NULL) {
+            word = strtok(NULL, "\n");
+        }
     }
+
+    // size_t count = 0;
+    // const void *key, *val;
+    // for (lh_iterator_t iterator = lh_iter(table); lh_next(&iterator, &key, &val);) {
+    //     if (*(size_t*)val >= 1024) {
+    //         ++count;
+    //     }
+    // }
+    // printf("%zu words with >= 1024 repetitions\n", count);
 
     lh_destroy(table);
     fclose(file);
