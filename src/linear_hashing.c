@@ -64,3 +64,56 @@ lh_destroy(lh_hashtable_t* const table) {
     free(table->buckets);
     free(table);
 }
+
+static inline size_t*
+hash_ptr(const lh_hashtable_t* const table, const struct bucket* const bucket, unsigned int const i) {
+    return (size_t*)((char*)bucket->items + i * (sizeof(size_t) + table->key_size + table->val_size));
+}
+
+static inline void*
+key_ptr(const lh_hashtable_t* const table, const struct bucket* const bucket, unsigned int const i) {
+    return (char*)bucket->items + i * (sizeof(size_t) + table->key_size + table->val_size) + sizeof(size_t);
+}
+
+static inline void*
+val_ptr(const lh_hashtable_t* const table, const struct bucket* const bucket, unsigned int const i) {
+    return (char*)bucket->items + i * (sizeof(size_t) + table->key_size + table->val_size) + sizeof(size_t)
+           + table->key_size;
+}
+
+int
+lh_next(lh_iterator_t* const iterator, const void** const key, const void** const val) {
+    assert(iterator != NULL && key != NULL && val != NULL);
+
+    const struct bucket* bucket;
+    do { // Skip empty buckets
+        if (iterator->bucket_index == iterator->table->bucket_count) {
+            return 0;
+        }
+
+        bucket = iterator->table->buckets[iterator->bucket_index];
+    } while (0 == bucket->item_count && ++iterator->bucket_index);
+
+    *key = key_ptr(iterator->table, bucket, iterator->item_index);
+    *val = val_ptr(iterator->table, bucket, iterator->item_index);
+    ++iterator->item_index;
+
+    if (iterator->item_index == bucket->item_count) {
+        if (bucket->next != NULL) {
+            bucket = bucket->next;
+        } else {
+            ++iterator->bucket_index;
+        }
+        iterator->item_index = 0;
+    }
+    return 1;
+}
+
+static inline struct bucket*
+bucket_ptr(const lh_hashtable_t* const table, size_t const hash) {
+    size_t i = hash & ((1 << table->round) - 1);
+    if (i < table->split_bucket) {
+        i = i ^ (1 << (table->round - 1));
+    }
+    return table->buckets[i];
+}

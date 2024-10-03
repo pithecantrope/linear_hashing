@@ -24,7 +24,7 @@ lh_iter(const lh_hashtable_t* table) {
     return (lh_iterator_t){.table = table};
 }
 
-// int lh_next(lh_iterator_t* iterator, const void** key, const void** value);
+int lh_next(lh_iterator_t* iterator, const void** key, const void** value);
 // void lh_insert(lh_hashtable_t* table, const void* key, const void* val);
 
 #endif // LINEAR_HASHING_H
