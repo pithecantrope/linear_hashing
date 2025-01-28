@@ -60,7 +60,7 @@ main(int argc, char* argv[]) {
     }
 
     // size_t count = 0;
-    printf("Printing:\n");
+    printf("\nPrinting:\n");
     const void *key, *val;
     for (lh_iterator_t iterator = lh_iter(table); lh_next(&iterator, &key, &val);) {
         printf("%s\n", (char*)key);

@@ -16,6 +16,7 @@ void lh_insert(lh_hashtable_t* table, const void* key, const void* value);
 
 typedef struct {
         const lh_hashtable_t* table;
+        struct bucket* bucket;
         size_t bucket_index;
         size_t item_index;
 } lh_iterator_t;
